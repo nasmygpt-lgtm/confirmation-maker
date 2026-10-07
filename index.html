@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grand Central Hotel — Confirmation Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🏨</span>
+      <div>
+        <h1>Grand Central Hotel</h1>
+        <p>Reservation Confirmation Generator — Deira, Dubai</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Booking Input</h2>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="paste">📋 Paste Text</div>
+        <div class="tab" data-tab="pdf">📄 Upload PDF</div>
+        <div class="tab" data-tab="upload">📸 Upload Screenshot</div>
+      </div>
+
+      <!-- PDF PANEL -->
+      <div id="panel-pdf" class="panel" hidden>
+        <p class="hint">Upload a booking PDF. The text is extracted in your browser (no API key) and appears in the Paste box — review it, then Generate.</p>
+        <div id="pdfDropZone" class="dropzone" tabindex="0">
+          <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden />
+          <div id="pdfDropPrompt" class="drop-prompt">
+            <span class="drop-icon">📄</span>
+            <p>Drop PDF here, or click to browse</p>
+          </div>
+        </div>
+        <p id="pdfStatus" class="status"></p>
+      </div>
+
+      <!-- UPLOAD PANEL -->
+      <div id="panel-upload" class="panel" hidden>
+        <p class="hint">Upload or paste a screenshot. It will be read with in-browser OCR (no API key) and the extracted text appears in the Paste box — review &amp; fix it, then Generate.</p>
+        <div id="dropZone" class="dropzone" tabindex="0">
+          <input type="file" id="fileInput" accept="image/*" hidden />
+          <div id="dropPrompt" class="drop-prompt">
+            <span class="drop-icon">📸</span>
+            <p>Drop screenshot here, click to browse, or paste (Ctrl/Cmd+V)</p>
+          </div>
+          <img id="preview" class="preview" alt="preview" hidden />
+        </div>
+        <div class="row">
+          <button id="ocrBtn" class="btn secondary" disabled>🔍 Read Screenshot (OCR)</button>
+        </div>
+        <p id="ocrStatus" class="status"></p>
+      </div>
+
+      <!-- PASTE PANEL -->
+      <div id="panel-paste" class="panel">
+      <p class="hint">Copy the booking (from email / sheet / PDF) and paste it below, then click <strong>Generate</strong>. It auto-detects the format — row-based tables (e.g. Ghai Holidays) and labelled layouts (e.g. Darina Holidays) — pulling out company, rooms, guests, dates, nights, meal plan and rates.</p>
+
+      <textarea id="input" class="paste-box" placeholder="Example:
+
+Greetings From Ghai Holidays !!!!!!
+
+Kindly proceed 4 Rooms Booking as per the below requirements :-
+
+S.NO   NAME OF PAX              CHECK-IN  CHECK-OUT  ROOM DETAILS     ADULTS   NIGHTS  MEAL  COST
+1      AMANDEEP SINGH KHANGURA  14-Oct    18-Oct     Deluxe Room      3 Adult  4       BB    200 x 4 = 800
+2      KARANVEER SINGH                                With Extra Bed                         70 x 4 = 280
+3      UCHVIR SINGH
+..."></textarea>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="nonRefundable">
+        Non-Refundable booking (removes Cancellation / Early Departure / Payment notes)
+      </label>
+      <label class="checkbox-row">
+        Hotel Confirmation No. (optional):
+        <input type="text" id="confNumber" placeholder="e.g. 35010" style="max-width:160px">
+      </label>
+      <label class="checkbox-row">
+        Year (for dates):
+        <input type="number" id="year" placeholder="2025" style="max-width:110px">
+      </label>
+
+      <div class="row actions">
+        <button id="generateBtn" class="btn primary">⚙️ Generate Confirmation</button>
+        <button id="exampleBtn" class="btn ghost">Load Example</button>
+        <button id="clearBtn" class="btn ghost">Clear</button>
+      </div>
+      <p id="status" class="status"></p>
+    </section>
+
+    <section class="card" id="resultCard" hidden>
+      <h2>Confirmation</h2>
+      <div id="confirmationOutput" class="confirmation"></div>
+
+      <div class="row result-actions" style="margin-top:18px;">
+        <button id="copyHtmlBtn" class="btn secondary">📋 Copy (Email)</button>
+        <button id="copyTextBtn" class="btn secondary">📄 Copy (Plain Text)</button>
+        <button id="downloadBtn" class="btn secondary">⬇️ Download</button>
+        <button id="printBtn" class="btn ghost">🖨️ Print</button>
+      </div>
+
+      <details class="raw">
+        <summary>Show detected data (check if parsing is correct)</summary>
+        <pre id="rawJson"></pre>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Grand Central Hotel · Muraqqabat Street, Deira, Dubai</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- PDF.js legacy UMD build exposes a global `pdfjsLib`. Loaded before app.js. -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
+  <script>
+    // Point PDF.js at its worker (required for text extraction). Guarded so a CDN miss
+    // never throws and blocks the rest of the page.
+    (function () {
+      try {
+        if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js";
+        }
+      } catch (e) { console.warn("PDF.js worker setup skipped:", e); }
+    })();
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
